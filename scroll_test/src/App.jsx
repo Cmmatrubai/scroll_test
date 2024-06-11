@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect, useRef } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [posts, setPosts] = useState([]);
+  const containerRef = useRef(null);
+
+  // Simulate fetching initial posts
+  useEffect(() => {
+    setPosts(Array.from({ length: 10 }, (_, i) => `Header ${i + 1}`));
+  }, []);
+
+  const fetchMorePosts = () => {
+    const newPosts = Array.from(
+      { length: 10 },
+      (_, i) => `Header ${posts.length + i + 1}`
+    );
+    setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+  };
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 5) {
+        fetchMorePosts();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div
+      ref={containerRef}
+      style={{ height: "100vh", overflowY: "auto", padding: "10px" }}
+    >
+      {posts.map((post, index) => (
+        <h1 key={index}>{post}</h1>
+      ))}
+    </div>
+  );
+};
 
-export default App
+export default App;
